@@ -7,6 +7,27 @@
 </head>
 <body>
   <h1>🔥 Frontend Ready - AI Agent Club 777</h1>
-  <p>Backend API endpoint: <code>/api/hello</code></p>
+
+  <div id="chat"></div>
+  <input id="message" type="text" placeholder="اكتب رسالتك هنا">
+  <button onclick="sendMessage()">أرسل</button>
+
+  <script>
+    const sessionId = 'frontend777'; // Session خاص بهذه الواجهة
+
+    async function sendMessage() {
+      const message = document.getElementById('message').value;
+      const response = await fetch('/api/agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, sessionId })
+      });
+      const data = await response.json();
+      const chatDiv = document.getElementById('chat');
+      chatDiv.innerHTML += `<p><b>أنت:</b> ${message}</p>`;
+      chatDiv.innerHTML += `<p><b>AI:</b> ${data.reply}</p>`;
+      document.getElementById('message').value = '';
+    }
+  </script>
 </body>
 </html>
