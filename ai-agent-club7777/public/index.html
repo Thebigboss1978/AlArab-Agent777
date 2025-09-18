@@ -1,19 +1,53 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Agent Club 777</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Agent Club 777 - Chat</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0a0a0a; color: white; display: flex; flex-direction: column; align-items: center; padding: 2rem; }
+    #chat { width: 100%; max-width: 600px; height: 400px; overflow-y: auto; border: 1px solid #555; padding: 1rem; margin-bottom: 1rem; background: #111; border-radius: 10px; }
+    #message { width: 70%; padding: 0.5rem; border-radius: 5px; border: 1px solid #555; background: #222; color: white; }
+    button { padding: 0.5rem 1rem; margin-left: 0.5rem; border-radius: 5px; border: none; background: #facc15; color: #111; font-weight: bold; cursor: pointer; }
+    p { margin: 0.3rem 0; }
+    b { font-weight: bold; }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>🔥 AI Agent Club 777</h1>
-    </header>
-    <main>
-        <button id="helloBtn">اتصل بالـ API</button>
-        <div id="response"></div>
-    </main>
-    <script src="../app.js"></script>
+
+<h1>🔥 AI Agent Club 777 Chat 🔥</h1>
+<div id="chat"></div>
+<div>
+  <input id="message" type="text" placeholder="اكتب رسالتك هنا...">
+  <button onclick="sendMessage()">أرسل</button>
+</div>
+
+<script>
+const sessionId = 'frontend777'; // كل واجهة لها session مختلف
+
+async function sendMessage() {
+  const msgInput = document.getElementById('message');
+  const msg = msgInput.value.trim();
+  if (!msg) return;
+
+  const chatDiv = document.getElementById('chat');
+  chatDiv.innerHTML += `<p><b>أنت:</b> ${msg}</p>`;
+  msgInput.value = '';
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: msg })
+    });
+    const data = await res.json();
+    chatDiv.innerHTML += `<p><b>AI:</b> ${data.reply || 'لا يوجد رد'}</p>`;
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+  } catch (err) {
+    chatDiv.innerHTML += `<p style="color:red;"><b>خطأ:</b> لم يتم الاتصال بالـ AI</p>`;
+  }
+}
+</script>
+
 </body>
 </html>
