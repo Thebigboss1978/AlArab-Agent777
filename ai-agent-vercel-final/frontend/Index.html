@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Agent Club 777 - Chat</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #0f0f0f, #1a1a1a); color: #fff; display:flex; flex-direction:column; align-items:center; padding:2rem; min-height:100vh; }
+    h1 { font-size:2rem; color:#facc15; margin-bottom:1.5rem; text-align:center; }
+    #chat { width:100%; max-width:650px; height:450px; overflow-y:auto; border:2px solid #555; border-radius:15px; padding:1rem; background:#111214; box-shadow:0 0 15px rgba(250,204,21,0.4); margin-bottom:1rem; }
+    #inputContainer { display:flex; width:100%; max-width:650px; }
+    #message { flex-grow:1; padding:0.7rem 1rem; border-radius:10px; border:1px solid #555; background:#222; color:white; font-size:1rem; }
+    button { padding:0.7rem 1.5rem; margin-left:0.5rem; border-radius:10px; border:none; background:#facc15; color:#111; font-weight:bold; font-size:1rem; cursor:pointer; transition: transform 0.1s; }
+    button:hover { transform: scale(1.05); }
+    p { margin:0.3rem 0; line-height:1.4; }
+    b { font-weight:bold; }
+    .user { color:#34d399; }
+    .ai { color:#22d3ee; }
+  </style>
+</head>
+<body>
+
+<h1>🔥 AI Agent Club 777 🔥</h1>
+
+<div id="chat"></div>
+
+<div id="inputContainer">
+  <input id="message" type="text" placeholder="اكتب رسالتك هنا...">
+  <button onclick="sendMessage()">أرسل</button>
+</div>
+
+<script>
+  const chatDiv = document.getElementById('chat');
+  const msgInput = document.getElementById('message');
+  const sessionId = 'frontend777';
+
+  async function sendMessage() {
+    const msg = msgInput.value.trim();
+    if (!msg) return;
+
+    chatDiv.innerHTML += `<p class="user"><b>أنت:</b> ${msg}</p>`;
+    msgInput.value = '';
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+
+    try {
+      // اتصال مباشر بالـ Backend على Vercel
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: msg, sessionId })
+      });
+
+      const data = await res.json();
+      const aiResponse = data.reply || "لا يوجد رد";
+      chatDiv.innerHTML += `<p class="ai"><b>AI:</b> ${aiResponse}</p>`;
+      chatDiv.scrollTop = chatDiv.scrollHeight;
+
+    } catch (err) {
+      chatDiv.innerHTML += `<p style="color:red;"><b>خطأ:</b> لم يتم الاتصال بالـ AI</p>`;
+    }
+  }
+
+  msgInput.addEventListener('keypress', function(e) { if(e.key==='Enter') sendMessage(); });
+</script>
+
+</body>
+</html>
