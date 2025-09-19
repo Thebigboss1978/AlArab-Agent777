@@ -5,108 +5,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Agent Club 777 - Chat</title>
   <style>
-    /* ---------- Styles ---------- */
-    body {
-      font-family: Arial, sans-serif;
-      background: #0a0a0a;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 1.5rem;
-    }
-
-    #chat {
-      width: 100%;
-      max-width: 600px;
-      height: 400px;
-      overflow-y: auto;
-      border: 1px solid #555;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      background: #111;
-      border-radius: 10px;
-    }
-
-    #message {
-      width: 70%;
-      padding: 0.5rem;
-      border-radius: 5px;
-      border: 1px solid #555;
-      background: #222;
-      color: white;
-    }
-
-    button {
-      padding: 0.5rem 1rem;
-      margin-left: 0.5rem;
-      border-radius: 5px;
-      border: none;
-      background: #facc15;
-      color: #111;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    p {
-      margin: 0.3rem 0;
-    }
-
-    b {
-      font-weight: bold;
-    }
+    body { font-family: Arial; background:#0a0a0a; color:white; display:flex; flex-direction:column; align-items:center; padding:2rem; }
+    h1 { text-align:center; margin-bottom:1.5rem; }
+    #chat { width:100%; max-width:600px; height:400px; overflow-y:auto; border:1px solid #555; padding:1rem; margin-bottom:1rem; background:#111; border-radius:10px; }
+    #message { width:70%; padding:0.5rem; border-radius:5px; border:1px solid #555; background:#222; color:white; }
+    button { padding:0.5rem 1rem; margin-left:0.5rem; border-radius:5px; border:none; background:#facc15; color:#111; font-weight:bold; cursor:pointer; }
+    p { margin:0.3rem 0; } b { font-weight:bold; }
   </style>
 </head>
 <body>
-
   <h1>🔥 AI Agent Club 777 Chat 🔥</h1>
-
   <div id="chat"></div>
-
   <div>
     <input id="message" type="text" placeholder="اكتب رسالتك هنا...">
     <button onclick="sendMessage()">أرسل</button>
   </div>
 
   <script>
-    /* ---------- Script ---------- */
-    const sessionId = 'frontend777'; // كل واجهة لها session مختلف
-
     const chatDiv = document.getElementById('chat');
     const msgInput = document.getElementById('message');
+    const sessionId = 'frontend777';
 
     async function sendMessage() {
       const msg = msgInput.value.trim();
       if (!msg) return;
-
       chatDiv.innerHTML += `<p><b>أنت:</b> ${msg}</p>`;
       msgInput.value = '';
 
-      try {
-        const res = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: msg })
-        });
-
-        const data = await res.json();
-        chatDiv.innerHTML += `<p><b>AI:</b> ${data.reply || 'لا يوجد رد'}</p>`;
-        chatDiv.scrollTop = chatDiv.scrollHeight; // تمرير تلقائي للأسفل
-      } catch (err) {
-        chatDiv.innerHTML += `<p style="color:red;"><b>خطأ:</b> لم يتم الاتصال بالـ AI</p>`;
-      }
+      // ردود تجريبية مباشرة
+      const responses = [
+        "تمام، فهمت!",
+        "شكرًا على رسالتك 👍",
+        "🤖 رد ذكي: " + msg,
+        "هيا بنا نكمل الحديث!",
+        "ممتاز، استمر!"
+      ];
+      const aiResponse = responses[Math.floor(Math.random() * responses.length)];
+      chatDiv.innerHTML += `<p><b>AI:</b> ${aiResponse}</p>`;
+      chatDiv.scrollTop = chatDiv.scrollHeight;
     }
 
-    // دعم الضغط على Enter لإرسال الرسالة
-    msgInput.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') sendMessage();
-    });
+    msgInput.addEventListener('keypress', function(e) { if(e.key==='Enter') sendMessage(); });
   </script>
-
 </body>
 </html>
