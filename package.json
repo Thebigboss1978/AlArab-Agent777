@@ -1,0 +1,8 @@
+{
+  "name": "alarabclub777",
+  "version": "0.1.0",
+  "scripts": {
+    "start": "vercel dev",
+    "deploy": "bash scripts/deploy.sh"
+  }
+}
