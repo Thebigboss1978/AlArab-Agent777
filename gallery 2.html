@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Galaxy Project Manager — AlArabClub777</title>
+<style>
+  :root{
+    --panel-w:320px;
+    --gap:12px;
+    --glass-bg: rgba(255,255,255,0.06);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:"Segoe UI",Tajawal,system-ui; background:#020206; color:#eaf6ff; overflow:hidden;
+  }
+
+  /* Header */
+  header{
+    position:fixed; inset:0 0 auto 0; height:60px; display:flex; align-items:center; justify-content:space-between;
+    padding:10px 18px; gap:10px; z-index:60;
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+    backdrop-filter: blur(10px) saturate(140%);
+    border-bottom:1px solid rgba(255,255,255,0.04);
+  }
+  header h1{margin:0; font-size:1.05rem; letter-spacing:0.3px}
+  .toolbar{display:flex;align-items:center;gap:8px}
+  .toolbar button, .toolbar select, .toolbar input{
+    background:var(--glass-bg); color:inherit; border:1px solid rgba(255,255,255,0.06);
+    padding:6px 8px; border-radius:8px; font-size:0.9rem;
+  }
+  .toolbar input{width:260px}
+
+  /* Canvas: full area under header */
+  canvas#galaxy{position:fixed; inset:60px calc(var(--panel-w) + var(--gap)) 0 0; z-index:1; display:block;}
+
+  /* Explorer */
+  .explorer{
+    position:fixed; left:12px; top:72px; bottom:12px; width:calc(100% - var(--panel-w) - 48px);
+    padding:12px; display:flex; flex-wrap:wrap; gap:12px; align-content:flex-start; overflow:auto; z-index:30;
+    background: linear-gradient(180deg, rgba(255,255,255,0.012), rgba(0,0,0,0.02));
+    border-radius:10px;
+  }
+  .card{
+    width:140px; min-height:116px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.04);
+    border-radius:10px; padding:8px; display:flex; flex-direction:column; align-items:center; gap:6px;
+    transition:transform .14s ease, box-shadow .14s ease; cursor:pointer; overflow:hidden;
+  }
+  .card:hover{ transform:translateY(-6px) scale(1.02); box-shadow:0 10px 30px rgba(0,160,255,0.06); }
+  .thumb{ width:100%; height:80px; background:#0b0b0b; border-radius:8px; object-fit:cover; display:block; }
+  .fname{ font-size:0.82rem; text-align:center; word-break:break-all; color:#e6f8ff; }
+
+  /* List */
+  .listItem{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:8px 12px; border-radius:8px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.02); cursor:pointer;
+  }
+  .listItem:hover{ background:linear-gradient(90deg, rgba(0,150,255,0.03), rgba(0,0,0,0.03)); }
+
+  /* Preview panel */
+  #preview{
+    position:fixed; right:12px; top:60px; width:var(--panel-w); bottom:12px; z-index:50; padding:12px; display:flex; flex-direction:column;
+    border-radius:12px; gap:8px; background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(3,6,12,0.35)); border:1px solid rgba(255,255,255,0.04);
+    backdrop-filter: blur(10px) saturate(140%);
+  }
+  #preview header{font-weight:700; font-size:0.95rem; padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.03)}
+  #previewMeta{font-size:0.78rem; opacity:0.85; margin-top:6px}
+  #viewer{flex:1; overflow:auto; display:flex; align-items:center; justify-content:center; padding:6px;}
+  #viewer img, #viewer video, #viewer iframe{max-width:100%; max-height:70vh; border-radius:8px; display:block;}
+  #previewButtons{display:flex; gap:8px; margin-top:6px}
+  #previewButtons button{flex:1; padding:8px; border-radius:8px; border:none; background:linear-gradient(90deg,#0fb3ff33,#0047ff22); color:#e9fbff; cursor:pointer}
+
+  /* Footer */
+  footer{position:fixed; left:0; right:0; bottom:0; height:34px; display:flex; align-items:center; justify-content:center; z-index:60;
+    background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.06)); font-size:0.78rem;
+  }
+
+  /* Scrollbars small */
+  .explorer::-webkit-scrollbar{height:8px;width:8px}
+  .explorer::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.06); border-radius:8px}
+
+  /* Glassy theme tweak */
+  .glassy{ background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); color:#001829; }
+  .glassy #preview{ background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.35)); color:#001829; border:1px solid rgba(255,255,255,0.6); }
+  .glassy .card{ background: rgba(255,255,255,0.06); color:#001829; border:1px solid rgba(255,255,255,0.08); }
+  .glassy .toolbar button, .glassy .toolbar select, .glassy .toolbar input{ background: rgba(255,255,255,0.6); color:#001829; border:1px solid rgba(255,255,255,0.35); }
+
+  /* Small screens adjustments */
+  @media (max-width:900px){
+    :root{ --panel-w:300px; }
+    .explorer{ left:8px; right:calc(var(--panel-w) + 24px); }
+    canvas#galaxy{ inset:60px calc(var(--panel-w) + 24px) 0 8px; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>🌌 Galaxy Project Manager — CLUB777</h1>
+    <div class="toolbar">
+      <button id="pickFolder">📁 اختر مجرة ملفات</button>
+      <select id="viewMode"><option value="grid">Grid</option><option value="card">Card</option><option value="list">List</option></select>
+      <input id="search" placeholder="🔎 بحث (type: , ext: , name:)">
+      <select id="theme"><option value="dark">Dark</option><option value="glassy">Glassy</option><option value="light">Light</option></select>
+    </div>
+  </header>
+
+  <canvas id="galaxy"></canvas>
+
+  <div class="explorer" id="explorer" aria-live="polite"></div>
+
+  <aside id="preview" role="complementary">
+    <header id="previewName">معاينة الملف</header>
+    <div id="previewMeta">لا يوجد ملف محدد</div>
+    <div id="viewer">اختر ملفًا من اليسار لعرض المعاينة</div>
+    <div id="previewButtons">
+      <button id="openBtn">فتح</button>
+      <button id="downloadBtn">تحميل</button>
+      <button id="copyBtn">نسخ الاسم</button>
+    </div>
+  </aside>
+
+  <footer>🌐 AlArabClub777 — العرّاب © 2025</footer>
+
+<script>
+/* -----------------------------
+   Local Portal - Hyper Galaxy
+   ----------------------------- */
+
+const canvas = document.getElementById('galaxy');
+const ctx = canvas.getContext('2d', { alpha: true });
+const explorer = document.getElementById('explorer');
+const previewName = document.getElementById('previewName');
+const previewMeta = document.getElementById('previewMeta');
+const viewer = document.getElementById('viewer');
+const openBtn = document.getElementById('openBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const copyBtn = document.getElementById('copyBtn');
+const pickFolderBtn = document.getElementById('pickFolder');
+const searchInput = document.getElementById('search');
+const viewModeSelect = document.getElementById('viewMode');
+const themeSelect = document.getElementById('theme');
+
+let files = [];        // {name,type,size,handle,color,_url?}
+let stars = [];        // particle stars for galaxy
+let particles = [];    // on-open particles
+let current = null;
+let hoverTarget = null;
+let devicePixelRatioValue = Math.max(1, window.devicePixelRatio || 1);
+
+// Resize canvas properly
+function resize(){
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * devicePixelRatioValue;
+  canvas.height = rect.height * devicePixelRatioValue;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = rect.height + 'px';
+  ctx.setTransform(devicePixelRatioValue,0,0,devicePixelRatioValue,0,0);
+}
+function fitCanvas(){
+  // set canvas area to match CSS inset
+  canvas.style.left = '0';
+  canvas.style.top = '60px';
+  canvas.style.right = `calc(var(--panel-w) + 12px)`;
+  canvas.style.bottom = '0';
+  resize();
+}
+window.addEventListener('resize', ()=>{ resize(); });
+
+// set initial size after layout
+setTimeout(()=>{ fitCanvas(); resize(); }, 30);
+
+
+/* ---------- Utilities ---------- */
+function colorForType(typeOrName){
+  if(!typeOrName) return '#2fe8ff';
+  if(typeOrName.startsWith('image')) return '#2fe8ff';
+  if(typeOrName.startsWith('video')) return '#b84bff';
+  if(typeOrName.includes('pdf') || typeOrName.endsWith('.pdf')) return '#ff6b6b';
+  if(typeOrName.includes('html') || typeOrName.endsWith('.html')) return '#ffb86b';
+  return '#9be564';
+}
+function makeObjectURLOnce(fileEntry, f){
+  if(f._url) return f._url;
+  // create objectURL for caching
+  fileEntry.getFile().then(file => {
+    try{
+      f._url = URL.createObjectURL(file);
+    }catch(e){}
+  });
+  return f._url || '';
+}
+
+/* ---------- File System Picker & Caching ---------- */
+pickFolderBtn.addEventListener('click', async ()=>{
+  try{
+    const dir = await window.showDirectoryPicker();
+    files = [];
+    // iterate entries
+    for await (const entry of dir.values()){
+      if(entry.kind === 'file'){
+        const file = await entry.getFile();
+        const type = file.type || (file.name.split('.').pop() ? 'application/octet-stream' : '');
+        const color = colorForType(type + ' ' + file.name);
+        files.push({ name: file.name, type, size: file.size, handle: entry, color });
+      }
+    }
+    // prefetch small thumbnails (but do it asynchronously so UI stays responsive)
+    prefetchThumbnails(files);
+    initStars(); renderExplorer();
+  }catch(err){
+    console.warn('picker canceled or not supported', err);
+  }
+});
+
+async function prefetchThumbnails(list){
+  // limit concurrency
+  for(const f of list){
+    if(f.type.startsWith('image') || f.type.startsWith('video')){
+      try{
+        const file = await f.handle.getFile();
+        f._url = URL.createObjectURL(file);
+      }catch(e){}
+    }
+  }
+}
+
+/* ---------- Stars & Particles ---------- */
+function initStars(){
+  stars = files.map(f=>{
+    return {
+      x: Math.random() * canvas.width / devicePixelRatioValue,
+      y: Math.random() * canvas.height / devicePixelRatioValue,
+      r: 5 + Math.random()*5,
+      color: f.color,
+      vx: (Math.random()-0.5)*0.6,
+      vy: (Math.random()-0.5)*0.6,
+      file: f
+    };
+  });
+}
+
+function spawnParticles(x,y,color,amount=24){
+  for(let i=0;i<amount;i++){
+    particles.push({
+      x, y,
+      vx: (Math.random()-0.5) * (2 + Math.random()*3),
+      vy: (Math.random()-0.5) * (2 + Math.random()*3),
+      life: 60 + Math.floor(Math.random()*40),
+      color,
+      size: 1 + Math.random()*3
+    });
+  }
+}
+
+/* ---------- Animation Loop (Galaxy + Particles) ---------- */
+let frame = 0;
+function drawLoop(){
+  frame++;
+  // clear with subtle fade for trail
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // center portal
+  const w = canvas.width / devicePixelRatioValue;
+  const h = canvas.height / devicePixelRatioValue;
+  const cx = w/2, cy = h/2;
+
+  // portal pulsing (depends on current opened file color)
+  const basePulse = 80 + Math.sin(frame*0.04) * 26;
+  const pulseColor = current ? (current.color || '#2fe8ff') : '#2fe8ff';
+  const g = ctx.createRadialGradient(cx, cy, basePulse*0.25, cx, cy, basePulse);
+  g.addColorStop(0, hexToRgba(pulseColor, 0.55));
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(cx, cy, basePulse, 0, Math.PI*2);
+  ctx.fill();
+
+  // update & draw stars
+  for(const s of stars){
+    // attraction to hovered card center
+    if(hoverTarget){
+      const rect = hoverTarget.getBoundingClientRect();
+      const tx = rect.left + rect.width/2;
+      const ty = rect.top + rect.height/2 - 60; // adjust for header offset
+      const dx = tx - s.x;
+      const dy = ty - s.y;
+      const dist = Math.hypot(dx,dy);
+      if(dist < 220){
+        const k = (220-dist)/220;
+        s.vx += dx * 0.00045 * k;
+        s.vy += dy * 0.00045 * k;
+      }
+    }
+    // slight following pointer behavior (soft)
+    if(mouse.x && mouse.y){
+      const dxm = mouse.x - s.x;
+      const dym = mouse.y - s.y;
+      s.vx += dxm * 0.00002;
+      s.vy += dym * 0.00002;
+    }
+
+    s.x += s.vx;
+    s.y += s.vy;
+
+    // friction and bounds
+    s.vx *= 0.995; s.vy *= 0.995;
+    if(s.x < 0){ s.x = 0; s.vx *= -0.6; }
+    if(s.x > w){ s.x = w; s.vx *= -0.6; }
+    if(s.y < 0){ s.y = 0; s.vy *= -0.6; }
+    if(s.y > h){ s.y = h; s.vy *= -0.6; }
+
+    ctx.save();
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = s.color;
+    ctx.fillStyle = s.color;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // draw connecting lines subtly
+  for(let i=0;i<stars.length;i++){
+    for(let j=i+1;j<stars.length;j++){
+      const a = stars[i], b = stars[j];
+      const dx = a.x - b.x, dy = a.y - b.y; const d = Math.hypot(dx,dy);
+      if(d < 140){
+        ctx.strokeStyle = hexToRgba(a.color, 0.04 + (140 - d)/140 * 0.06);
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      }
+    }
+  }
+
+  // update particles
+  for(let i = particles.length -1; i >= 0; i--){
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy;
+    p.vx *= 0.98; p.vy *= 0.98;
+    p.life--;
+    if(p.life <= 0){ particles.splice(i,1); continue; }
+    const alpha = Math.max(0, p.life / 100);
+    ctx.fillStyle = hexToRgba(p.color, 0.9 * alpha);
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.size * (0.6 + alpha), 0, Math.PI*2); ctx.fill();
+  }
+
+  requestAnimationFrame(drawLoop);
+}
+drawLoop();
+
+/* ---------- Interaction: hover detection for cards (delegation) ---------- */
+let hoverTimer = null;
+document.addEventListener('mousemove', (ev)=>{
+  // convert client coords to canvas coords
+  const r = canvas.getBoundingClientRect();
+  const cx = ev.clientX - r.left, cy = ev.clientY - r.top;
+  mouse.x = cx; mouse.y = cy;
+});
+
+// track hovered explorer card element
+explorer.addEventListener('pointerover', e=>{
+  const card = e.target.closest('.card, .listItem');
+  if(card){ hoverTarget = card; }
+});
+explorer.addEventListener('pointerout', e=>{
+  const card = e.target.closest('.card, .listItem');
+  if(card){
+    // small delay to allow moving inside other card
+    clearTimeout(hoverTimer);
+    hoverTimer = setTimeout(()=>{ hoverTarget = null; }, 120);
+  }
+});
+
+/* ---------- Explorer Rendering with Thumbnails & caching ---------- */
+let viewMode = viewModeSelect.value;
+viewModeSelect.addEventListener('change', e=>{
+  viewMode = e.target.value;
+  renderExplorer();
+});
+
+async function renderExplorer(filtered = files){
+  explorer.innerHTML = '';
+  // basic sorting to show images first for nicer view
+  const list = filtered.slice().sort((a,b)=>{
+    const A = a.type.startsWith('image') ? 0 : (a.type.startsWith('video') ? 1 : 2);
+    const B = b.type.startsWith('image') ? 0 : (b.type.startsWith('video') ? 1 : 2);
+    return A - B;
+  });
+  for(const f of list){
+    if(viewMode === 'list'){
+      const div = document.createElement('div'); div.className = 'listItem';
+      div.innerHTML = `<div style="display:flex;gap:10px;align-items:center"><div style="width:44px;height:34px;background:#071018;border-radius:6px;display:flex;align-items:center;justify-content:center">${iconFor(f)}</div><div style="font-size:0.9rem">${escapeHtml(f.name)}</div></div><div style="opacity:0.8;font-size:0.82rem">${(f.size/1024).toFixed(1)} KB</div>`;
+      div.addEventListener('click', ()=> openPreview(f, div));
+      explorer.appendChild(div);
+    } else {
+      const div = document.createElement('div'); div.className = 'card';
+      // thumbnail element
+      const thumbContainer = document.createElement('div');
+      if(f.type.startsWith('image')){
+        const img = document.createElement('img'); img.className='thumb';
+        if(f._url){ img.src = f._url; } else {
+          // create objectURL and cache
+          f.handle.getFile().then(file=>{
+            f._url = URL.createObjectURL(file);
+            img.src = f._url;
+          }).catch(()=>{});
+        }
+        thumbContainer.appendChild(img);
+      } else if(f.type.startsWith('video')){
+        const v = document.createElement('video'); v.className='thumb'; v.muted=true; v.autoplay=true; v.loop=true; v.playsInline=true;
+        if(f._url){ v.src = f._url; } else {
+          f.handle.getFile().then(file=>{ f._url = URL.createObjectURL(file); v.src = f._url; }).catch(()=>{});
+        }
+        // ensure silent (no autoplay sound)
+        v.addEventListener('loadeddata', ()=>{ try{ v.muted=true; v.play().catch(()=>{}); }catch(e){} });
+        thumbContainer.appendChild(v);
+      } else {
+        // default icon block
+        const block = document.createElement('div'); block.style.width='100%'; block.style.height='80px'; block.style.display='flex'; block.style.alignItems='center'; block.style.justifyContent='center';
+        block.style.fontSize='0.82rem'; block.textContent = fileTypeLabel(f); thumbContainer.appendChild(block);
+      }
+      div.appendChild(thumbContainer);
+      const label = document.createElement('div'); label.className='fname'; label.textContent = f.name;
+      div.appendChild(label);
+      div.addEventListener('click', ()=> openPreview(f, div));
+      explorer.appendChild(div);
+    }
+  }
+}
+
+/* ---------- Smart Search ---------- */
+searchInput.addEventListener('input', ()=>{
+  const q = searchInput.value.trim().toLowerCase();
+  if(!q){ renderExplorer(files); return; }
+  const filtered = files.filter(f=>{
+    if(q.startsWith('type:')) return f.type.includes(q.slice(5));
+    if(q.startsWith('ext:')) return f.name.toLowerCase().endsWith(q.slice(4));
+    if(q.startsWith('name:')) return f.name.toLowerCase().includes(q.slice(5));
+    return f.name.toLowerCase().includes(q);
+  });
+  renderExplorer(filtered);
+});
+
+/* ---------- Open Preview: show file & create particle pulse ---------- */
+async function openPreview(f, el=null){
+  current = f;
+  previewName.textContent = f.name;
+  previewMeta.textContent = `${(f.size/1024).toFixed(1)} KB — ${f.type || 'unknown'}`;
+  viewer.innerHTML = '';
+  // create pulse color & particles
+  const color = f.color || '#2fe8ff';
+  // find approx portal center to spawn particles
+  const rect = canvas.getBoundingClientRect(); const cx = rect.left + rect.width/2; const cy = rect.top + rect.height/2;
+  spawnParticles(cx - rect.left, cy - rect.top, color, 40);
+  // portal pulse stronger: change portal base by setting current to f (handled in draw loop)
+  try{
+    const fileBlob = await f.handle.getFile();
+    if(f.type.startsWith('image')){
+      const img = document.createElement('img'); img.src = URL.createObjectURL(fileBlob); viewer.appendChild(img);
+    } else if(f.type.startsWith('video')){
+      const v = document.createElement('video'); v.src = URL.createObjectURL(fileBlob); v.controls = true; v.muted = true; v.style.maxHeight = '66vh'; viewer.appendChild(v);
+      // ensure muted autoplay if user clicks again
+      v.addEventListener('play', ()=>{ v.muted = true; });
+    } else if(f.name.endsWith('.html') || f.type === 'text/html'){
+      const txt = await fileBlob.text();
+      const iframe = document.createElement('iframe'); iframe.srcdoc = txt; iframe.width='100%'; iframe.height='360'; viewer.appendChild(iframe);
+    } else if(f.name.endsWith('.pdf')){
+      const iframe = document.createElement('iframe'); iframe.src = URL.createObjectURL(fileBlob); iframe.width='100%'; iframe.height='360'; viewer.appendChild(iframe);
+    } else {
+      // text or unknown -> show text preview
+      try{
+        const txt = await fileBlob.text();
+        const pre = document.createElement('pre'); pre.style.whiteSpace='pre-wrap'; pre.style.fontSize='12px'; pre.style.color='inherit';
+        pre.textContent = txt.slice(0, 40000) || '(لا يمكن عرض المحتوى الطويل)';
+        viewer.appendChild(pre);
+      }catch(e){
+        viewer.textContent = '📄 لا توجد معاينة متاحة';
+      }
+    }
+  }catch(e){
+    viewer.textContent = '❌ خطأ في المعاينة';
+  }
+}
+
+/* ---------- Buttons actions ---------- */
+openBtn.addEventListener('click', ()=>{ if(current) window.open(URL.createObjectURL(new Blob([])), '_blank'); });
+downloadBtn.addEventListener('click', async ()=>{
+  if(!current) return;
+  const f = await current.handle.getFile();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = current.name; a.click();
+});
+copyBtn.addEventListener('click', async ()=>{
+  if(!current) return;
+  try{ await navigator.clipboard.writeText(current.name); alert('تم نسخ الاسم: '+current.name); }catch(e){}
+});
+
+/* ---------- Theme Switcher ---------- */
+themeSelect.addEventListener('change', e=>{
+  const v = e.target.value;
+  if(v === 'glassy'){ document.body.classList.add('glassy'); }
+  else { document.body.classList.remove('glassy'); }
+  if(v === 'light'){ document.body.style.background = '#f6fbff'; document.body.style.color = '#072032'; }
+  else if(v === 'dark'){ document.body.style.background = '#020206'; document.body.style.color = '#eaf6ff'; }
+  else { document.body.style.background = ''; document.body.style.color = ''; }
+});
+
+/* ---------- Helpers ---------- */
+function hexToRgba(hex, alpha=1){
+  // hex like #rrggbb
+  const c = hex.replace('#','');
+  const r = parseInt(c.substring(0,2),16);
+  const g = parseInt(c.substring(2,4),16);
+  const b = parseInt(c.substring(4,6),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+function iconFor(f){
+  if(f.type.startsWith('image')) return '🖼️';
+  if(f.type.startsWith('video')) return '🎞️';
+  if(f.type.includes('pdf')||f.name.endsWith('.pdf')) return '📕';
+  if(f.type.includes('html')||f.name.endsWith('.html')) return '🌐';
+  return '📄';
+}
+function fileTypeLabel(f){
+  if(f.type.startsWith('image')) return 'صورة';
+  if(f.type.startsWith('video')) return 'فيديو';
+  if(f.name.endsWith('.pdf')) return 'PDF';
+  if(f.name.endsWith('.html')) return 'HTML';
+  return f.type || 'ملف';
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+/* ---------- Initial small demo fallback (optional) ---------- */
+// if File System API not available, populate demo files (placeholders)
+if(!window.showDirectoryPicker){
+  // create lightweight demo items (no real thumbnails)
+  for(let i=1;i<=8;i++){
+    files.push({ name:`demo-image-${i}.png`, type:'image/png', size:12345, handle:null, color:colorForType('image') });
+  }
+  // small delay to show explorer
+  initStars(); renderExplorer();
+} 
+
+/* allow renderExplorer when files assigned later */
+function initAndRender(){
+  initStars();
+  renderExplorer();
+}
+window.initAndRender = initAndRender;
+
+/* Call initial resize and rendering */
+resize();
+</script>
+</body>
+</html>
